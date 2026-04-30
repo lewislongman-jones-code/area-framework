@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A.R.E.A. — Agentic Readiness · Intent HQ</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=DM+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a09;--bg2:#161614;--bg3:#202020;--bg4:#2a2a28;--bg5:#363634;
+  --bd:rgba(255,255,255,0.09);--bd2:rgba(255,255,255,0.18);--bd3:rgba(255,255,255,0.3);
+  --ink:#f4f1ea;--ink2:#c8c4bb;--ink3:#908c83;--ink4:#5a5854;
+  --g:#3d8a68;--gl:#52b589;--gs:#2a6049;--gbg:rgba(61,138,104,0.12);--gdim:rgba(61,138,104,0.18);
+  --am:#c08a30;--ambg:rgba(192,138,48,0.12);
+  --rd:#a04040;--rdbg:rgba(160,64,64,0.12);
+  --blue:#4a6fa5;--bluebg:rgba(74,111,165,0.12);
+  --r:8px;--rl:14px;--rxl:20px;
+  --fmono:'DM Mono',monospace;--fserif:'Cormorant Garamond',serif;--fsans:'Lato',sans-serif;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:var(--fsans);background:var(--bg);color:var(--ink);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;line-height:1.6}
+.page{display:none}.page.active{display:block}
+
+/* NAV */
+nav{background:rgba(12,12,10,0.97);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--bd2);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(1rem,4vw,2.5rem);position:sticky;top:0;z-index:200}
+.nav-l{display:flex;align-items:center;gap:14px}
+.nav-sep{width:1px;height:18px;background:var(--bd2)}
+.nav-tag{font-family:var(--fmono);font-size:11px;color:var(--ink3);letter-spacing:.06em;text-transform:uppercase}
+.nav-r{display:flex;align-items:center}
+.nav-ctx-btn{background:transparent;border:1px solid var(--bd2);color:var(--ink2);font-family:var(--fmono);font-size:11px;letter-spacing:.05em;padding:7px 16px;border-radius:var(--r);cursor:pointer;transition:all .2s;text-transform:uppercase;white-space:nowrap}
+.nav-ctx-btn:hover{border-color:var(--gl);color:var(--gl);background:var(--gbg)}
+.logo-svg{height:24px;width:auto;display:block}
+
+/* STEPS */
+.steps{display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--bd2);background:var(--bg2);flex-wrap:wrap}
+.step{display:flex;align-items:center;gap:8px;padding:13px clamp(8px,2.5vw,18px);font-family:var(--fmono);font-size:10px;color:var(--ink4);border-bottom:2px solid transparent;transition:all .25s;letter-spacing:.04em;text-transform:uppercase;cursor:pointer;user-select:none;white-space:nowrap}
+.step:hover:not(.act){color:var(--ink3)}
+.step.act{color:var(--gl);border-bottom-color:var(--g)}
+.step.done{color:var(--ink2);cursor:pointer}
+.step.done:hover{color:var(--ink)}
+.snum{width:20px;height:20px;border-radius:50%;border:1px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;flex-shrink:0;transition:all .25s}
+.step.done .snum{background:var(--gdim);border-color:var(--g);color:var(--gl)}
+.step-div{width:16px;height:1px;background:var(--bd2);flex-shrink:0}
+
+/* CONTEXT DRAWER */
+.ctx-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:500;opacity:0;pointer-events:none;transition:opacity .3s}
+.ctx-overlay.open{opacity:1;pointer-events:all}
+.ctx-drawer{position:fixed;top:0;right:0;width:min(560px,100vw);height:100vh;background:var(--bg2);border-left:1px solid var(--bd2);z-index:501;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1);overflow-y:auto;display:flex;flex-direction:column}
+.ctx-drawer.open{transform:translateX(0)}
+.ctx-head{padding:1.75rem clamp(1rem,4vw,2rem) 1.25rem;border-bottom:1px solid var(--bd);display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;position:sticky;top:0;background:var(--bg2);z-index:10}
+.ctx-head h2{font-family:var(--fserif);font-size:clamp(1.4rem,3vw,1.9rem);font-weight:400;line-height:1.2;color:var(--ink)}
+.ctx-head h2 em{font-style:italic;color:var(--gl)}
+.ctx-close{background:var(--bg3);border:1px solid var(--bd2);color:var(--ink2);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.ctx-close:hover{border-color:var(--bd3);color:var(--ink)}
+.ctx-body{padding:1.5rem clamp(1rem,4vw,2rem) 3rem;flex:1}
+.ctx-intro{font-size:15px;color:var(--ink2);line-height:1.75;margin-bottom:1.5rem}
+.ctx-intro strong{color:var(--ink);font-weight:400}
+.ctx-quote-box{background:var(--gdim);border:1px solid rgba(61,138,104,.3);border-radius:var(--rl);padding:1.1rem 1.4rem;margin-bottom:2rem}
+.ctx-quote-box p{font-family:var(--fserif);font-style:italic;font-size:1.1rem;color:var(--ink);line-height:1.55}
+.ctx-insight{padding:.9rem 0;border-bottom:1px solid var(--bd)}
+.ctx-insight:last-child{border-bottom:none}
+.ci-num{font-family:var(--fmono);font-size:10px;color:var(--ink3);letter-spacing:.08em;margin-bottom:.35rem;text-transform:uppercase}
+.ci-h{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:.3rem}
+.ci-p{font-size:14px;color:var(--ink2);line-height:1.6;margin-bottom:.35rem}
+.ci-q{font-size:13px;color:var(--ink3);line-height:1.5;padding-left:12px;border-left:2px solid var(--gs);font-style:italic}
+.ci-q strong{color:var(--ink2);font-style:normal;font-weight:400}
+.ctx-ties{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:1.5rem}
+.ctx-tie{background:var(--bg3);border:1px solid var(--bd);border-radius:var(--r);padding:.7rem 1rem}
+.ct-l{font-family:var(--fserif);font-size:1.2rem;color:var(--gl);margin-bottom:3px}
+.ct-t{font-size:13px;color:var(--ink2);line-height:1.4}
+
+/* TOOLTIPS */
+.tip{display:inline;border-bottom:1px dashed var(--ink3);cursor:help;position:relative}
+.tip-icon{display:inline-flex;width:14px;height:14px;border-radius:50%;background:var(--bg4);border:1px solid var(--ink3);align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--ink3);font-family:var(--fmono);vertical-align:middle;margin-left:2px;cursor:help;flex-shrink:0;transition:all .15s}
+.tip:hover .tip-icon{border-color:var(--gl);color:var(--gl)}
+.tip-box{display:none;position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--bd2);border-radius:var(--r);padding:.75rem 1rem;width:clamp(200px,40vw,240px);font-size:13px;color:var(--ink2);line-height:1.6;z-index:300;white-space:normal;font-family:var(--fsans);font-style:normal;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.tip-box::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--bg3)}
+.tip:hover .tip-box{display:block}
+
+/* GLOW HERO */
+.glow-hero{position:relative;overflow:hidden}
+.glow-hero::before{content:'';position:absolute;top:-140px;left:50%;transform:translateX(-50%);width:min(800px,140vw);height:500px;background:radial-gradient(ellipse at center,rgba(61,138,104,.15) 0%,transparent 65%);pointer-events:none;z-index:0}
+.glow-hero>*{position:relative;z-index:1}
+
+/* PAGE 0 */
+.p0-hero{padding:clamp(3rem,8vw,6rem) clamp(1rem,4vw,2rem) clamp(2.5rem,5vw,4rem);text-align:center;border-bottom:1px solid var(--bd2)}
+.eyebrow{font-family:var(--fmono);font-size:11px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--gl);margin-bottom:1.5rem;display:block}
+.p0-hero h1{font-family:var(--fserif);font-size:clamp(2.4rem,5.5vw,4.2rem);font-weight:400;line-height:1.1;color:var(--ink);margin-bottom:1.5rem;max-width:720px;margin-left:auto;margin-right:auto}
+.p0-hero h1 em{font-style:italic;color:var(--gl)}
+.p0-intro{font-size:clamp(15px,2vw,17px);color:var(--ink2);max-width:580px;margin:0 auto 2.5rem;line-height:1.8;font-weight:300}
+.p0-summary{display:block;background:var(--gdim);border:1px solid rgba(61,138,104,.3);border-radius:var(--rl);padding:1.5rem 2rem;margin:0 auto 2.5rem;max-width:640px;text-align:left}
+.p0-summary p{font-size:15px;color:var(--ink2);line-height:1.8}
+.p0-summary p strong{color:var(--ink);font-weight:400}
+.p0-summary .pqs{font-family:var(--fserif);font-style:italic;font-size:clamp(1.1rem,2vw,1.3rem);color:var(--ink);line-height:1.5;border-top:1px solid rgba(61,138,104,.25);margin-top:1rem;padding-top:1rem}
+.p0-body{max-width:960px;margin:0 auto;padding:clamp(2rem,4vw,3.5rem) clamp(1rem,4vw,2rem) clamp(1.5rem,3vw,2rem)}
+.igrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin-bottom:2rem}
+.ic{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rl);padding:1.4rem 1.6rem;transition:border-color .2s,background .2s}
+.ic:hover{border-color:var(--bd2);background:var(--bg3)}
+.ic-n{font-family:var(--fmono);font-size:10px;color:var(--ink4);letter-spacing:.08em;margin-bottom:.5rem;text-transform:uppercase}
+.ic-h{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:.5rem;line-height:1.3}
+.ic-p{font-size:14px;color:var(--ink2);line-height:1.65;margin-bottom:.6rem}
+.ic-q{font-size:13px;color:var(--ink3);line-height:1.5;padding-left:12px;border-left:2px solid var(--gs);font-style:italic}
+.ic-q strong{color:var(--ink2);font-style:normal;font-weight:400}
+.p0-closer{background:var(--bg2);border:1px solid var(--bd2);border-radius:var(--rxl);padding:2rem clamp(1.25rem,4vw,2.5rem);text-align:center;margin-bottom:2.5rem}
+.p0-closer p{font-size:15px;color:var(--ink2);line-height:1.8;max-width:600px;margin:0 auto .75rem}
+.p0-em{font-family:var(--fserif);font-style:italic;font-size:clamp(1.1rem,2.5vw,1.35rem);color:var(--ink);max-width:580px;margin:.75rem auto 0;line-height:1.5}
+.aties{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:1.75rem}
+.at{background:var(--bg3);border:1px solid var(--bd);border-radius:var(--r);padding:.8rem 1rem;text-align:left}
+.at-l{font-family:var(--fserif);font-size:1.2rem;color:var(--gl);margin-bottom:3px}
+.at-t{font-size:13px;color:var(--ink2);line-height:1.4}
+.cta-wrap{text-align:center;padding:0 0 clamp(3rem,5vw,5rem)}
+
+/* PAGE 0b — SECTOR + NAME */
+.reg-hero{padding:clamp(3rem,6vw,5rem) clamp(1rem,4vw,2rem) clamp(2rem,4vw,3rem);text-align:center;border-bottom:1px solid var(--bd2)}
+.reg-hero h2{font-family:var(--fserif);font-size:clamp(1.9rem,4vw,3rem);font-weight:400;line-height:1.15;margin-bottom:.75rem}
+.reg-hero h2 em{font-style:italic;color:var(--gl)}
+.reg-hero p{font-size:15px;color:var(--ink2);max-width:480px;margin:0 auto;line-height:1.75}
+.reg-body{max-width:560px;margin:0 auto;padding:clamp(2rem,4vw,3rem) clamp(1rem,4vw,1.5rem) clamp(4rem,8vw,6rem)}
+.reg-field{margin-bottom:1.75rem}
+.reg-label{font-family:var(--fmono);font-size:11px;color:var(--ink2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.65rem;display:block}
+.reg-input{width:100%;background:var(--bg2);border:1px solid var(--bd2);border-radius:var(--r);padding:12px 16px;font-family:var(--fsans);font-size:15px;color:var(--ink);outline:none;transition:border-color .2s}
+.reg-input:focus{border-color:var(--gl)}
+.reg-input::placeholder{color:var(--ink4)}
+.sector-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px}
+.sector-btn{background:var(--bg2);border:1px solid var(--bd2);border-radius:var(--r);padding:10px 14px;font-family:var(--fsans);font-size:14px;color:var(--ink2);cursor:pointer;transition:all .15s;text-align:left;line-height:1.3}
+.sector-btn:hover{border-color:var(--gl);color:var(--ink)}
+.sector-btn.sel{background:var(--gbg);border-color:var(--g);color:var(--gl)}
+.sector-btn .sb-icon{font-size:18px;display:block;margin-bottom:4px}
+.reg-actions{display:flex;justify-content:space-between;align-items:center;margin-top:2.5rem;flex-wrap:wrap;gap:1rem}
+
+/* BUTTONS */
+.btn-cta,.btn-res{background:var(--g);color:#fff;border:none;padding:14px 36px;font-family:var(--fmono);font-size:12px;font-weight:500;border-radius:var(--r);cursor:pointer;transition:background .2s,transform .15s;letter-spacing:.06em;text-transform:uppercase}
+.btn-cta:hover,.btn-res:hover{background:var(--gl);transform:translateY(-1px)}
+.btn-cta:disabled,.btn-res:disabled{background:var(--bg5);color:var(--ink4);cursor:not-allowed;transform:none}
+.btn-ghost{background:transparent;color:var(--ink2);border:1px solid var(--bd2);padding:12px 24px;font-family:var(--fmono);font-size:11px;border-radius:var(--r);cursor:pointer;transition:all .2s;letter-spacing:.05em;text-transform:uppercase;margin-right:8px}
+.btn-ghost:hover{border-color:var(--bd3);color:var(--ink);background:var(--bg3)}
+.btn-prim{background:var(--g);color:#fff;border:none;padding:12px 24px;font-family:var(--fmono);font-size:11px;border-radius:var(--r);cursor:pointer;transition:background .2s;letter-spacing:.05em;text-transform:uppercase}
+.btn-prim:hover{background:var(--gl)}
+
+/* PAGE 1 — ASSESSMENT */
+.a-hero{padding:clamp(2.5rem,5vw,4rem) clamp(1rem,4vw,2rem) clamp(2rem,4vw,3rem);text-align:center;border-bottom:1px solid var(--bd2)}
+.a-hero h2{font-family:var(--fserif);font-size:clamp(1.9rem,4vw,3rem);font-weight:400;line-height:1.15;margin-bottom:1rem;color:var(--ink)}
+.a-hero h2 em{font-style:italic;color:var(--gl)}
+.a-hero p{font-size:clamp(14px,2vw,16px);color:var(--ink2);max-width:520px;margin:0 auto 2rem;line-height:1.75}
+.pchips{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:1.5rem}
+.pchip{background:var(--bg3);border:1px solid var(--bd2);color:var(--ink2);font-family:var(--fmono);font-size:11px;padding:5px 14px;border-radius:20px;letter-spacing:.03em}
+.pchip strong{color:var(--ink)}
+.tnote{font-size:13px;color:var(--ink3);margin-bottom:0;line-height:1.7}
+.tnote strong{color:var(--ink2)}
+.user-badge{display:inline-flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--bd2);border-radius:20px;padding:6px 16px;font-size:13px;color:var(--ink2);margin-bottom:1rem}
+.user-badge strong{color:var(--ink)}
+.user-badge .ub-sector{font-family:var(--fmono);font-size:10px;color:var(--ink3);letter-spacing:.04em;text-transform:uppercase}
+.aw{max-width:780px;margin:0 auto;padding:clamp(2rem,4vw,3rem) clamp(1rem,4vw,1.5rem) clamp(4rem,8vw,6rem)}
+.prog-row{display:flex;align-items:center;gap:14px;margin-bottom:2.5rem}
+.prog-bg{flex:1;height:3px;background:var(--bg5);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:var(--g);border-radius:3px;transition:width .4s ease;width:0%}
+.prog-lbl{font-family:var(--fmono);font-size:11px;color:var(--ink3);white-space:nowrap;letter-spacing:.04em;min-width:48px;text-align:right}
+.pb{margin-bottom:2.75rem}
+.ph{display:flex;align-items:center;gap:14px;margin-bottom:1.1rem;padding-bottom:1rem;border-bottom:1px solid var(--bd2)}
+.pbadge{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:var(--fserif);font-size:1.3rem;color:var(--ink);flex-shrink:0;border:1px solid var(--bd2)}
+.pb.p0 .pbadge{background:rgba(61,138,104,.18);border-color:rgba(61,138,104,.35)}
+.pb.p1 .pbadge{background:rgba(80,110,200,.18);border-color:rgba(80,110,200,.35)}
+.pb.p2 .pbadge{background:rgba(192,138,48,.18);border-color:rgba(192,138,48,.35)}
+.pb.p3 .pbadge{background:rgba(160,80,140,.18);border-color:rgba(160,80,140,.35)}
+.ptitle{font-size:17px;font-weight:700;color:var(--ink);margin-bottom:2px}
+.psub{font-size:13px;color:var(--ink3);font-style:italic;line-height:1.4}
+.qcard{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rl);padding:1.1rem 1.3rem;margin-bottom:10px;transition:border-color .2s}
+.qcard.answered{border-color:var(--bd2)}
+.qcard-top{display:flex;align-items:flex-start;gap:1rem}
+.qtext{flex:1;min-width:0}
+.qt{font-size:clamp(14px,2vw,15px);line-height:1.6;color:var(--ink);margin-bottom:.4rem}
+.qreason{font-size:13px;color:var(--ink3);line-height:1.65;margin-top:.5rem;padding:.75rem 1rem;background:var(--bg3);border-radius:var(--r);border-left:2px solid var(--gs);display:none}
+.qcard.show-reason .qreason{display:block}
+.qreason-toggle{background:none;border:none;font-family:var(--fmono);font-size:10px;color:var(--ink4);cursor:pointer;padding:4px 0 0;letter-spacing:.04em;text-transform:uppercase;display:inline-flex;align-items:center;gap:5px;transition:color .2s}
+.qreason-toggle:hover{color:var(--gl)}
+.arr{transition:transform .2s;display:inline-block;font-size:9px}
+.qcard.show-reason .qreason-toggle .arr{transform:rotate(180deg)}
+.tgg{display:flex;gap:6px;flex-shrink:0;padding-top:1px}
+.tg{padding:8px 13px;border-radius:var(--r);border:1px solid var(--bd2);font-family:var(--fmono);font-size:11px;font-weight:500;cursor:pointer;background:transparent;color:var(--ink2);transition:all .15s;white-space:nowrap;letter-spacing:.02em}
+.tg:hover{border-color:var(--gl);color:var(--gl);background:var(--gbg)}
+.tg.sno{background:var(--rdbg);border-color:var(--rd);color:#e07070}
+.tg.spa{background:var(--ambg);border-color:var(--am);color:#dba84e}
+.tg.sye{background:var(--gbg);border-color:var(--g);color:var(--gl)}
+.sa{text-align:center;padding-top:2rem}
+.cn{font-family:var(--fmono);font-size:11px;color:var(--ink3);margin-top:12px;letter-spacing:.03em}
+
+/* PAGE 2 — RESULTS */
+.rh{padding:clamp(3rem,6vw,5rem) clamp(1rem,4vw,2rem) clamp(2.5rem,5vw,4rem);text-align:center;border-bottom:1px solid var(--bd2)}
+.rhe{font-family:var(--fmono);font-size:10px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:.75rem}
+.aname{font-family:var(--fserif);font-size:clamp(2.6rem,7vw,4.5rem);font-weight:400;font-style:italic;color:var(--gl);margin-bottom:.75rem;line-height:1.05}
+.adesc{font-size:clamp(14px,2vw,16px);color:var(--ink2);max-width:540px;margin:0 auto 2rem;line-height:1.8}
+.score-ring{width:96px;height:96px;border-radius:50%;border:1px solid var(--bd2);background:var(--bg2);display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto}
+.score-n{font-family:var(--fserif);font-size:2.6rem;font-weight:400;line-height:1;color:var(--ink)}
+.score-s{font-family:var(--fmono);font-size:10px;color:var(--ink3);margin-top:3px;letter-spacing:.04em}
+.rb{max-width:920px;margin:0 auto;padding:clamp(2rem,4vw,3rem) clamp(1rem,4vw,1.5rem) clamp(4rem,8vw,6rem)}
+.slbl{font-family:var(--fmono);font-size:10px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:.75rem;display:block}
+
+/* TABS */
+.tab-bar{display:flex;gap:4px;margin-bottom:1.5rem;background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rl);padding:4px;width:fit-content}
+.tab-btn{font-family:var(--fmono);font-size:11px;padding:8px 18px;border-radius:10px;border:none;cursor:pointer;background:transparent;color:var(--ink3);letter-spacing:.04em;text-transform:uppercase;transition:all .2s}
+.tab-btn.act{background:var(--bg4);color:var(--ink)}
+.tab-btn:hover:not(.act){color:var(--ink2)}
+.tab-panel{display:none}.tab-panel.act{display:block}
+
+/* PILLAR SCORE CARDS */
+.psg{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:1.75rem}
+.psc{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rl);padding:1.25rem 1.3rem;position:relative;overflow:hidden}
+.pscbar{position:absolute;bottom:0;left:0;height:3px}
+.pscbar.p0{background:var(--g)}.pscbar.p1{background:#506ebe}.pscbar.p2{background:var(--am)}.pscbar.p3{background:#965082}
+.pscl{font-family:var(--fserif);font-size:1.1rem;color:var(--ink2);margin-bottom:4px}
+.pscn{font-family:var(--fmono);font-size:10px;color:var(--ink3);margin-bottom:12px;letter-spacing:.04em;text-transform:uppercase;line-height:1.3}
+.pscs{font-family:var(--fserif);font-size:2.4rem;font-weight:400;color:var(--ink);line-height:1}
+.pscd{font-family:var(--fmono);font-size:10px;color:var(--ink3);margin-top:1px}
+.pscc{display:flex;gap:5px;margin-top:10px;flex-wrap:wrap}
+.chip{font-family:var(--fmono);font-size:10px;font-weight:500;padding:3px 8px;border-radius:20px}
+.cy{background:var(--gbg);color:var(--gl)}.cp{background:var(--ambg);color:#dba84e}.cno{background:var(--rdbg);color:#d46e6e}
+
+/* BENCHMARK CARDS */
+.bench-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:1.75rem}
+.bench-card{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rl);padding:1.25rem 1.4rem}
+.bc-label{font-family:var(--fmono);font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.5rem}
+.bc-val{font-family:var(--fserif);font-size:2.2rem;font-weight:400;color:var(--ink);line-height:1;margin-bottom:.25rem}
+.bc-sub{font-size:13px;color:var(--ink3)}
+.bc-delta{font-family:var(--fmono);font-size:11px;margin-top:.4rem;padding:3px 8px;border-radius:20px;display:inline-block}
+.bc-delta.pos{background:var(--gbg);color:var(--gl)}
+.bc-delta.neg{background:var(--rdbg);color:#d46e6e}
+.bc-delta.neu{background:var(--bg4);color:var(--ink3)}
+
+/* SECTOR TABLE */
+.sector-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:1.5rem}
+.sector-table th{font-family:var(--fmono);font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);padding:.6rem .8rem;border-bottom:1px solid var(--bd2);text-align:left}
+.sector-table td{padding:.65rem .8rem;border-bottom:1px solid var(--bd);color:var(--ink2);vertical-align:middle}
+.sector-table tr.mine td{color:var(--ink);background:var(--gdim)}
+.sector-table tr:last-child td{border-bottom:none}
+.sector-table .score-pill{font-family:var(--fmono);font-size:11px;font-weight:500;padding:2px 8px;border-radius:20px;display:inline-block}
+.sector-table .you-badge{font-family:var(--fmono);font-size:9px;background:var(--gdim);color:var(--gl);border:1px solid var(--g);padding:2px 7px;border-radius:20px;margin-left:6px;vertical-align:middle}
+
+/* PANELS & CHARTS */
+.cpanel{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rl);padding:1.75rem clamp(1.25rem,3vw,2rem);margin-bottom:1.25rem}
+.ctitle{font-size:17px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.csub{font-size:13px;color:var(--ink3);margin-bottom:1.5rem}
+.rw{max-width:400px;margin:0 auto;position:relative;height:320px}
+.rw-wide{max-width:100%;margin:0 auto;position:relative;height:280px}
+.ppr{display:flex;align-items:flex-start;gap:12px;padding:.8rem 0;border-bottom:1px solid var(--bd)}
+.ppr:last-child{border-bottom:none}
+.pnum{width:24px;height:24px;border-radius:50%;flex-shrink:0;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-family:var(--fmono);font-size:10px;font-weight:500;color:var(--ink3);margin-top:1px}
+.pnum.urg{background:var(--rdbg);color:#e07070}
+.pt{flex:1;font-size:14px;line-height:1.55;color:var(--ink2)}
+.ptag{font-family:var(--fmono);font-size:10px;color:var(--ink4);margin-top:2px;text-transform:uppercase;letter-spacing:.04em}
+.ac{font-family:var(--fmono);font-size:10px;font-weight:500;padding:3px 9px;border-radius:20px;flex-shrink:0;margin-top:2px}
+.rg{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-bottom:1.5rem}
+.rc{background:var(--bg2);border:1px solid var(--bd);border-left:3px solid var(--g);border-radius:var(--rl);padding:1.25rem 1.4rem}
+.rc.p1{border-left-color:#506ebe}.rc.p2{border-left-color:var(--am)}.rc.p3{border-left-color:#965082}
+.rtag{font-family:var(--fmono);font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px}
+.rc h4{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:8px;line-height:1.35}
+.rc p{font-size:14px;color:var(--ink2);line-height:1.7}
+.ctab{background:var(--bg2);border:1px solid var(--bd2);border-radius:var(--rxl);padding:2.5rem clamp(1.5rem,4vw,2.5rem);text-align:center;position:relative;overflow:hidden}
+.ctab::before{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:400px;height:260px;background:radial-gradient(ellipse at center,rgba(61,138,104,.08) 0%,transparent 70%);pointer-events:none}
+.ctab h3{font-family:var(--fserif);font-size:clamp(1.5rem,3vw,2rem);font-weight:400;color:var(--ink);margin-bottom:.6rem}
+.ctab p{font-size:15px;color:var(--ink2);line-height:1.75;max-width:500px;margin:0 auto 2rem}
+.ctab-leads{font-family:var(--fmono);font-size:10px;color:var(--ink3);margin-top:1.25rem;letter-spacing:.04em}
+.loading-state{text-align:center;padding:3rem 1rem;color:var(--ink3);font-family:var(--fmono);font-size:12px;letter-spacing:.04em}
+.loading-dot{display:inline-block;animation:blink 1.2s infinite}
+.loading-dot:nth-child(2){animation-delay:.2s}
+.loading-dot:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.3}40%{opacity:1}}
+.error-state{background:var(--rdbg);border:1px solid var(--rd);border-radius:var(--r);padding:1rem 1.25rem;font-size:13px;color:#e07070;margin-bottom:1rem}
+.info-note{background:var(--gdim);border:1px solid rgba(61,138,104,.3);border-radius:var(--r);padding:.75rem 1rem;font-size:13px;color:var(--ink2);margin-bottom:1.25rem;line-height:1.55}
+.info-note strong{color:var(--ink);font-weight:400}
+
+@media(max-width:640px){
+  .nav-tag{display:none}.step .st{display:none}
+  .qcard-top{flex-direction:column;gap:.75rem}.tgg{width:100%}.tg{flex:1;text-align:center;padding:10px 8px}
+  .aw,.rb,.p0-body,.reg-body{padding:2rem 1rem 4rem}
+  .p0-hero,.a-hero,.reg-hero,.rh{padding:3rem 1rem 2.5rem}
+  .tip-box{left:0;transform:none;right:auto;width:200px}
+  .tip-box::after{left:20px;transform:none}
+  .tab-bar{width:100%}.tab-btn{flex:1;padding:8px 10px}
+  .sector-grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+}
+</style>
+</head>
+<body>
+
+<!-- CONTEXT DRAWER -->
+<div class="ctx-overlay" id="ctxOverlay"></div>
+<div class="ctx-drawer" id="ctxDrawer">
+  <div class="ctx-head">
+    <h2>What separates the <em>5%?</em></h2>
+    <button class="ctx-close" id="ctxClose" aria-label="Close">✕</button>
+  </div>
+  <div class="ctx-body">
+    <p class="ctx-intro">MIT research shows 95% of AI initiatives deliver zero measurable return. The 5% who succeed share a common pattern — not better models, but better foundations: trusted data, aligned decisions, redesigned workflows, and the organisational context that tells AI not just what to do, but how to think.<br><br><strong>These are the ten patterns that show up in every deployment that stalls — and in every one that scales.</strong></p>
+    <div class="ctx-quote-box"><p>"Skills are now abundant. Context is scarce. The organisations that win will be those that encode their best judgment into how AI makes decisions — not just what it decides."</p></div>
+    <div id="ctxInsights"></div>
+    <p class="slbl" style="margin-top:1.75rem;margin-bottom:.75rem">How this connects to A.R.E.A.</p>
+    <div class="ctx-ties" id="ctxTies"></div>
+  </div>
+</div>
+
+<!-- PAGE 0: CONTEXT -->
+<div id="page0" class="page active">
+  <nav>
+    <div class="nav-l">
+      <svg class="logo-svg" viewBox="0 0 130 26" fill="none"><text x="0" y="20" font-family="Lato,sans-serif" font-weight="700" font-size="17" fill="#f4f1ea" letter-spacing="-0.3">intent</text><circle cx="107" cy="10" r="5" fill="#3d8a68"/><text x="114" y="20" font-family="Lato,sans-serif" font-weight="300" font-size="11" fill="#c8c4bb">hq</text></svg>
+      <div class="nav-sep"></div><span class="nav-tag">Workshop Two</span>
+    </div>
+    <button class="nav-ctx-btn" id="ctxBtn0">Key insights ↗</button>
+  </nav>
+  <div class="steps">
+    <div class="step act" data-goto="0"><div class="snum">1</div><span class="st">The opportunity</span></div>
+    <div class="step-div"></div>
+    <div class="step" data-goto="1"><div class="snum">2</div><span class="st">About you</span></div>
+    <div class="step-div"></div>
+    <div class="step"><div class="snum">3</div><span class="st">Assessment</span></div>
+    <div class="step-div"></div>
+    <div class="step"><div class="snum">4</div><span class="st">Your profile</span></div>
+  </div>
+  <div class="p0-hero glow-hero">
+    <span class="eyebrow">Before you assess · Workshop Two</span>
+    <h1>95% of AI initiatives deliver<br><em>zero measurable return.</em><br>What separates the 5%?</h1>
+    <p class="p0-intro">MIT research across hundreds of organisations is unambiguous: the difference between those capturing real value from AI and those stuck in pilot mode is not the sophistication of the model. It is the quality of the foundations beneath it — data, decision clarity, workflow design, and organisational alignment.</p>
+    <div class="p0-summary">
+      <p><strong>The Forbes Effect is real.</strong> Board pressure is high, headlines suggest everyone is moving fast, and the temptation is to act before the foundations are ready. But agentic AI amplifies whatever it finds — great signals become great customer decisions, while gaps in data, misaligned metrics, and unclear processes get automated at scale before anyone notices.</p>
+      <div class="pqs">"The organisations that win won't have the best models. They'll have the best signals, the clearest decision frameworks, and the alignment to act on both — at speed."</div>
+    </div>
+  </div>
+  <div class="p0-body">
+    <div class="igrid" id="insightGrid"></div>
+    <div class="p0-closer">
+      <p>These aren't hypothetical risks — they show up in every deployment that stalls. The organisations in the 5% who deliver measurable ROI addressed them early, deliberately, and before they scaled. The assessment that follows helps you understand which of these are live issues for your organisation right now.</p>
+      <div class="p0-em">"When the foundations are right, AI doesn't just work — it compounds. Every signal gets sharper, every decision gets better, and every customer experience gets more relevant."</div>
+      <div class="aties" id="areaTies"></div>
+    </div>
+    <div class="cta-wrap">
+      <button class="btn-cta" id="p0cta">Tell us about you →</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 0b: SECTOR + NAME -->
+<div id="page1" class="page">
+  <nav>
+    <div class="nav-l">
+      <svg class="logo-svg" viewBox="0 0 130 26" fill="none"><text x="0" y="20" font-family="Lato,sans-serif" font-weight="700" font-size="17" fill="#f4f1ea" letter-spacing="-0.3">intent</text><circle cx="107" cy="10" r="5" fill="#3d8a68"/><text x="114" y="20" font-family="Lato,sans-serif" font-weight="300" font-size="11" fill="#c8c4bb">hq</text></svg>
+      <div class="nav-sep"></div><span class="nav-tag">About You</span>
+    </div>
+    <button class="nav-ctx-btn" id="ctxBtn1">Key insights ↗</button>
+  </nav>
+  <div class="steps">
+    <div class="step done" data-goto="0"><div class="snum">1</div><span class="st">The opportunity</span></div>
+    <div class="step-div"></div>
+    <div class="step act"><div class="snum">2</div><span class="st">About you</span></div>
+    <div class="step-div"></div>
+    <div class="step"><div class="snum">3</div><span class="st">Assessment</span></div>
+    <div class="step-div"></div>
+    <div class="step"><div class="snum">4</div><span class="st">Your profile</span></div>
+  </div>
+  <div class="reg-hero glow-hero">
+    <h2>Before we start — <em>tell us about you</em></h2>
+    <p>Your sector lets us benchmark your results against others in your industry and across all participants.</p>
+  </div>
+  <div class="reg-body">
+    <div class="reg-field">
+      <label class="reg-label">Your sector</label>
+      <div class="sector-grid" id="sectorGrid"></div>
+    </div>
+    <div class="reg-actions">
+      <button class="btn-ghost" id="regBack">← Back</button>
+      <button class="btn-cta" id="startAssessBtn" disabled>Start assessment →</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 2: ASSESSMENT -->
+<div id="page2" class="page">
+  <nav>
+    <div class="nav-l">
+      <svg class="logo-svg" viewBox="0 0 130 26" fill="none"><text x="0" y="20" font-family="Lato,sans-serif" font-weight="700" font-size="17" fill="#f4f1ea" letter-spacing="-0.3">intent</text><circle cx="107" cy="10" r="5" fill="#3d8a68"/><text x="114" y="20" font-family="Lato,sans-serif" font-weight="300" font-size="11" fill="#c8c4bb">hq</text></svg>
+      <div class="nav-sep"></div><span class="nav-tag">Assessment</span>
+    </div>
+    <button class="nav-ctx-btn" id="ctxBtn2">Key insights ↗</button>
+  </nav>
+  <div class="steps">
+    <div class="step done" data-goto="0"><div class="snum">1</div><span class="st">The opportunity</span></div>
+    <div class="step-div"></div>
+    <div class="step done" data-goto="1"><div class="snum">2</div><span class="st">About you</span></div>
+    <div class="step-div"></div>
+    <div class="step act"><div class="snum">3</div><span class="st">Assessment</span></div>
+    <div class="step-div"></div>
+    <div class="step"><div class="snum">4</div><span class="st">Your profile</span></div>
+  </div>
+  <div class="a-hero glow-hero">
+    <h2>Which side of the <em>95/5 divide</em><br>is your organisation on?</h2>
+    <div id="userBadge"></div>
+    <p>12 questions across four pillars — the same foundations that separate AI initiatives delivering measurable returns from those stuck in pilot mode.</p>
+    <div class="pchips">
+      <div class="pchip"><strong>A</strong> Accessible Signals</div>
+      <div class="pchip"><strong>R</strong> Real Decision Clarity</div>
+      <div class="pchip"><strong>E</strong> Execution &amp; Learning</div>
+      <div class="pchip"><strong>A</strong> Adoption &amp; Governance</div>
+    </div>
+    <p class="tnote">Answer: <strong>No · Partially · Yes</strong> — about 3 minutes · hover terms for definitions · ▾ shows why each question matters</p>
+  </div>
+  <div class="aw">
+    <div class="prog-row">
+      <div class="prog-bg"><div class="prog-fill" id="pf"></div></div>
+      <div class="prog-lbl" id="pl">0 / 12</div>
+    </div>
+    <div id="pc"></div>
+    <div class="sa">
+      <button class="btn-res" id="showResultsBtn">View my readiness profile →</button>
+      <p class="cn" id="cn">Answer all questions for the most accurate profile</p>
+    </div>
+  </div>
+</div>
+
+<!-- PAGE 3: RESULTS -->
+<div id="page3" class="page">
+  <nav>
+    <div class="nav-l">
+      <svg class="logo-svg" viewBox="0 0 130 26" fill="none"><text x="0" y="20" font-family="Lato,sans-serif" font-weight="700" font-size="17" fill="#f4f1ea" letter-spacing="-0.3">intent</text><circle cx="107" cy="10" r="5" fill="#3d8a68"/><text x="114" y="20" font-family="Lato,sans-serif" font-weight="300" font-size="11" fill="#c8c4bb">hq</text></svg>
+      <div class="nav-sep"></div><span class="nav-tag">Your Profile</span>
+    </div>
+    <button class="nav-ctx-btn" id="ctxBtn3">Key insights ↗</button>
+  </nav>
+  <div class="steps">
+    <div class="step done" data-goto="0"><div class="snum">1</div><span class="st">The opportunity</span></div>
+    <div class="step-div"></div>
+    <div class="step done" data-goto="1"><div class="snum">2</div><span class="st">About you</span></div>
+    <div class="step-div"></div>
+    <div class="step done" data-goto="2"><div class="snum">3</div><span class="st">Assessment</span></div>
+    <div class="step-div"></div>
+    <div class="step act"><div class="snum">4</div><span class="st">Your profile</span></div>
+  </div>
+  <div class="rh glow-hero">
+    <div class="rhe">Your archetype</div>
+    <div class="aname" id="an">—</div>
+    <div class="adesc" id="ad">—</div>
+    <div class="score-ring">
+      <div class="score-n" id="os">—</div>
+      <div class="score-s">out of 5</div>
+    </div>
+  </div>
+  <div class="rb">
+    <div class="tab-bar">
+      <button class="tab-btn act" data-tab="my">My results</button>
+      <button class="tab-btn" data-tab="bench">Benchmarks</button>
+    </div>
+
+    <!-- MY RESULTS TAB -->
+    <div id="tab-my" class="tab-panel act">
+      <span class="slbl">Your pillar scores</span>
+      <div class="psg" id="psg"></div>
+      <div class="cpanel">
+        <div class="ctitle">Your readiness radar</div>
+        <div class="csub">Scores across the four pillars — 1 (foundations needed) to 5 (leading practice)</div>
+        <div class="rw"><canvas id="radarMine" role="img" aria-label="Your radar chart"></canvas></div>
+      </div>
+      <div class="cpanel">
+        <div class="ctitle" style="margin-bottom:4px">Priority focus areas</div>
+        <div class="csub">Questions answered No or Partially — ranked by urgency</div>
+        <div id="pr"></div>
+      </div>
+      <span class="slbl">Recommendations</span>
+      <div class="rg" id="rg"></div>
+    </div>
+
+    <!-- BENCHMARKS TAB -->
+    <div id="tab-bench" class="tab-panel">
+      <div id="benchContent">
+        <div class="loading-state">Loading benchmark data<span class="loading-dot">.</span><span class="loading-dot">.</span><span class="loading-dot">.</span></div>
+      </div>
+    </div>
+
+    <div class="ctab">
+      <h3>See agentic AI in action</h3>
+      <p>IntentOne translates <span class="tip">behavioural signals<span class="tip-icon">?</span><span class="tip-box">Real-time data about what customers are doing — browsing, transacting, engaging — that reveals their intent and likelihood to act.</span></span> into decision-ready personalisation opportunities, with built-in guardrails, approval workflows, and full auditability at enterprise scale.</p>
+      <div>
+        <button class="btn-ghost" id="startOverBtn">← Start over</button>
+        <button class="btn-prim" id="downloadBtn">Download PDF</button>
+      </div>
+      <div class="ctab-leads">Workshop leads: Lewis Longman-Jones &amp; David Arrowsmith · Intent HQ</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════
+   CONFIG — add API key and Sheet ID for benchmarks
+══════════════════════════════════════════════ */
+const CONFIG = {
+  SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbykxRulZmFT71wLLzYccXoyHVnJvZh8HpMThdzcljtyZXAPPb39RZpoQtENXVqFi4Gjzw/exec',
+  SHEET_ID:   '1-iF-idKQX0Ieb_BPDm9h8xS9O7Zagk4WfX3tkLFaM7k',
+  API_KEY:    'AIzaSyCahXu-IcdcMMowVl2_J3EWDf83dfLaN-o',
+  SHEET_NAME: 'responses'
+};
+
+/* ══════════════════════════════════════════════
+   STATIC DATA
+══════════════════════════════════════════════ */
+const SECTORS=[
+  {id:'telecom',    label:'Telecoms',        icon:'📡'},
+  {id:'banking',    label:'Banking & FSI',   icon:'🏦'},
+  {id:'insurance',  label:'Insurance',       icon:'🛡️'},
+  {id:'retail',     label:'Retail',          icon:'🛍️'},
+  {id:'media',      label:'Media & Tech',    icon:'📱'},
+  {id:'utilities',  label:'Utilities',       icon:'⚡'},
+  {id:'healthcare', label:'Healthcare',      icon:'🏥'},
+  {id:'govt',       label:'Government',      icon:'🏛️'},
+  {id:'travel',     label:'Travel & Hospitality', icon:'✈️'},
+  {id:'fmcg',       label:'FMCG',            icon:'🧴'},
+  {id:'auto',       label:'Automotive',      icon:'🚗'},
+  {id:'other',      label:'Other',           icon:'🏢'},
+];
+
+const INS=[
+  {n:'01',h:'The Forbes Effect: everyone thinks they\'re ahead',p:'Board pressure is real, headlines are everywhere, and competitors appear to be moving fast. But MIT research shows 95% of AI initiatives deliver zero measurable return. The perception gap between leadership ambition and organisational reality is the most common reason deployments stall.',q:'<strong>The reality check:</strong> "Being seen to act on AI and actually capturing value from it are two very different things. The 5% who succeed share the same foundations — and they built them first."'},
+  {n:'02',h:'Your strategy moves at thought speed. Your org moves at culture speed.',p:'Leaders can envision agentic AI transforming CVM overnight. But culture, process, and data infrastructure don\'t move at the same pace. The gap between what a leader imagines and what the organisation can safely execute is where most AI value gets lost.',q:'<strong>The principle:</strong> "Culture eats strategy for breakfast. Implementation lag is not a technology problem — it\'s an alignment problem, and it compounds."'},
+  {n:'03',h:'You didn\'t buy a data problem. But here you are.',p:'The iceberg problem: organisations invest in AI models but discover the real barrier is inaccessible data, undefined processes, and misaligned teams underneath. AI works brilliantly in controlled conditions — it amplifies whatever is already there, good or bad.',q:'<strong>The insight:</strong> "Most AI initiatives don\'t fail because the model was wrong. They fail because no one fixed the plumbing first."'},
+  {n:'04',h:'Skills are now free. Context is priceless.',p:'A marketing coordinator can learn SQL in the morning, query the customer database, automate reporting, and deliver executive-ready analysis — before the data team has finished handling the performance alerts triggered by their unoptimised query. Speed without context is a new category of risk.',q:'<strong>The shift:</strong> "AI gives skills fast but not context. A new employee can generate a beautiful churn analysis without knowing which customers actually matter to your business model, or that you tried this exact approach three years ago and it failed."'},
+  {n:'05',h:'Workslop: fast, polished, and completely wrong',p:'Two new archetypes are emerging. "Workslop" — AI used thoughtlessly, producing confident-looking garbage. And "chimeric talent" — AI used skillfully but without organisational context, running at speed straight into the wrong problem, automating the wrong thing, optimising for metrics that don\'t matter.',q:'<strong>The challenge:</strong> "You now get outputs that look right but aren\'t — and the faster AI gets, the harder this is to catch before it scales."'},
+  {n:'06',h:'Garbage in, automated out — at scale',p:'Agentic systems act directly on data without a human interpreting the output first. When data is wrong, the system doesn\'t hesitate — it executes. In a CVM workflow making thousands of customer decisions daily, bad data doesn\'t produce a funny answer — it produces thousands of wrong customer decisions before anyone notices.',q:'<strong>The implication:</strong> "Data quality is no longer a hygiene factor. In an agentic world, data is instruction — and flawed instruction scales."'},
+  {n:'07',h:'It\'s not the agent. It\'s the plumbing.',p:'The most common mistake in agentic AI deployment: layering autonomy onto existing processes rather than redesigning the workflow. McKinsey\'s research shows workflow redesign correlates with AI impact far more strongly than model sophistication. The agent is the easy part.',q:'<strong>The discipline:</strong> "Agentic AI is not a feature or a tool. It is a new operating model that requires redesigning how work flows across teams, systems, and decisions."'},
+  {n:'08',h:'Are we building smarter systems — or just faster ways to disagree?',p:'Three-quarters of companies use AI in at least one function. Only a minority are capturing meaningful financial impact. The difference is alignment — clear objectives, governance, and execution coordination — not algorithmic sophistication.',q:'<strong>The finding:</strong> "Autonomous systems will optimise whatever they are pointed at — whether that is the right objective or not. Alignment is not a soft issue. It is a hard control system."'},
+  {n:'09',h:'Guardrails don\'t slow you down — they\'re what makes it safe to go fast.',p:'Organisations that define risk limits, decision authority, and ethical boundaries before deploying at scale consistently move faster than those that don\'t. The constraint isn\'t the guardrail — it\'s the absence of one.',q:'<strong>The paradox:</strong> "Least-privilege access, human-in-the-loop for critical actions, anomaly detection — these aren\'t brakes. They\'re what lets you keep your foot on the accelerator."'},
+  {n:'10',h:'From campaign operator to decision architect',p:'As AI handles more personalisation execution, the human role shifts to defining intent, encoding judgment, setting boundaries, and interpreting outcomes. This is higher-value work — but it requires new skills, new org design, and leaders who can direct AI capability rather than just use it.',q:'<strong>The evolution:</strong> "The organisations that win won\'t have the best models. They\'ll have the best signals, the clearest decision frameworks, and the organisational alignment to act on both — at speed."'},
+];
+const ATIES=[
+  {l:'A',t:'Bad data doesn\'t just create noise — it creates automated error at scale'},
+  {l:'R',t:'Misaligned metrics mean AI optimises for the wrong thing, confidently'},
+  {l:'E',t:'Workflow redesign matters more than model sophistication'},
+  {l:'A',t:'Context and culture determine whether AI value is captured or lost'},
+];
+const GLOSS={
+  'behavioural signals':'Real-time data about what customers are doing — browsing, transacting, engaging — that reveals intent and likelihood to act.',
+  'AI decisions':'Automated choices made by AI on your behalf — e.g. which offer to show, which customers to contact, or which journey to trigger.',
+  'agentic AI':'AI that doesn\'t just recommend — it acts autonomously, triggering communications and adjusting customer journeys within defined guardrails.',
+  'real-time signals':'Customer behaviour data available within seconds or minutes — enabling decisions to be made while intent is still live.',
+  'intent detection':'Identifying from behaviour that a customer is in a particular mindset — likely to buy, at risk of churning — before they\'ve made it explicit.',
+  'LTV':'Lifetime Value — the total revenue a customer is expected to generate. A core metric for prioritising CVM investment.',
+  'feedback loops':'The mechanism by which outcomes of AI decisions automatically retrain models to improve future decisions.',
+  'decisioning layer':'The logic that takes signals about a customer and determines what action to take — the bridge between data and activation.',
+  'workslop':'AI-generated output that looks polished and professional but is unreliable — produced when people use AI tools without verifying outputs.',
+  'context':'The organisational knowledge that determines whether work is valuable — how decisions are really made, what\'s been tried and failed. Skills are now abundant; context is scarce.',
+  'workflow redesign':'Rethinking end-to-end processes to integrate AI — not just adding AI to existing steps. The single strongest predictor of AI ROI per McKinsey.',
+};
+const PILLARS=[
+  {letter:'A',pi:0,title:'Accessible Signals',sub:'"Is our data ready to be instruction — not just information?"',qs:[
+    {id:'a1',q:'Is all customer data — transactions, behaviour, preferences — accessible in one unified place rather than siloed by system or team?',reason:'The iceberg problem plays out most visibly here. Organisations invest in AI models and discover the real blocker is data locked in separate systems. Agentic AI acts directly on data — it cannot reason around gaps the way a human analyst can.',tips:['behavioural signals','decisioning layer']},
+    {id:'a2',q:'Do you have a systematic data quality process — with clear ownership and monitoring — so the signals driving customer decisions can be trusted?',reason:'In agentic systems, data is instruction. Bad data doesn\'t produce a funny answer — it produces thousands of wrong customer decisions before anyone notices. Data quality is a control mechanism, not a hygiene exercise.',tips:['AI decisions','workslop']},
+    {id:'a3',q:'Do Marketing, CVM, Risk, and Technology teams share agreed definitions for customer concepts like value, intent, and engagement?',reason:'Misaligned definitions mean AI optimises confidently in the wrong direction. If Marketing and Risk define "high-value customer" differently, AI will produce outputs that are technically correct but commercially wrong.',tips:['intent detection','LTV','context']},
+    {id:'a4',q:'Are customer behavioural signals available in real time or near-real time — not just in overnight batch — enabling action in the moment?',reason:'A customer browsing upgrade options right now and the same customer who browsed yesterday are fundamentally different opportunities. Real-time signals are what allow personalisation to feel timely rather than a day behind.',tips:['real-time signals','behavioural signals']},
+  ]},
+  {letter:'R',pi:1,title:'Real Decision Clarity',sub:'"Are we aligned on what good looks like — or just optimising in different directions?"',qs:[
+    {id:'r1',q:'Do Marketing, CVM, Risk, and Technology teams all use the same metrics — LTV, churn probability, revenue contribution — when evaluating customer decisions?',reason:'Misaligned metrics are how you build faster ways to disagree. When teams optimise for different definitions of success, AI produces outputs that satisfy one function and frustrate another. The model is working perfectly — just toward the wrong shared objective.',tips:['LTV','context']},
+    {id:'r2',q:'Have you mapped and prioritised the end-to-end customer workflows — not just individual tasks — where AI-driven personalisation will create the most commercial value?',reason:'McKinsey\'s research is unambiguous: workflow redesign correlates with AI ROI far more strongly than model sophistication. Organisations that layer AI onto existing processes see limited impact. Those that redesign the workflow around AI outcomes are in the 5%.',tips:['AI decisions','intent detection','workflow redesign']},
+    {id:'r3',q:'Has your organisation moved from scheduled campaign calendars to detecting real-time customer intent as the primary trigger for personalised action?',reason:'Campaign calendars are built around what organisations want to say. Intent-led activation is built around when customers are ready to hear it. The shift requires both real-time signals and the organisational clarity to act on them.',tips:['intent detection','real-time signals','behavioural signals']},
+  ]},
+  {letter:'E',pi:2,title:'Execution & Learning',sub:'"Can we act at speed — without losing sight of what\'s happening?"',qs:[
+    {id:'e1',q:'Are AI-driven customer decisions fully visible and auditable, with marketing and CVM teams able to review, understand, or override them at any point?',reason:'Capable but context-blind AI optimises the wrong metrics, automates the wrong workflows — at speed. Visibility is the minimum condition for catching this. Without audit trails, you only find out when the damage is done.',tips:['AI decisions','agentic AI','workslop']},
+    {id:'e2',q:'Is there a documented suppression and override logic — defining which customers, situations, or offer types must never be handled autonomously, regardless of model confidence?',reason:'This is the decision authority matrix made concrete for CVM. Without it, teams either bottleneck everything or rubber-stamp everything. Suppression logic is what makes it safe to let AI run at speed with customers.',tips:['agentic AI','AI decisions','workflow redesign']},
+    {id:'e3',q:'Do outcomes from AI-driven customer decisions automatically feed back into your models — improving personalisation continuously rather than requiring manual retuning?',reason:'Without feedback loops, AI performance plateaus. With them, it compounds: every customer interaction makes the next decision better. Organisations in the 5% consistently cite continuous learning loops as a key differentiator.',tips:['feedback loops','AI decisions']},
+  ]},
+  {letter:'A',pi:3,title:'Adoption & Governance',sub:'"Does the organisation have the context, culture, and guardrails to scale this responsibly?"',qs:[
+    {id:'g1',q:'Is there a shared, documented risk appetite for automated customer decisions — agreed across Marketing, Risk, Legal, and Technology before deployment begins?',reason:'Without a shared framework agreed in advance, every deployment becomes a bespoke negotiation — creating the implementation lag that separates the 95% from the 5%. Risk appetite is a control system, not a compliance form.',tips:['AI decisions','agentic AI','context']},
+    {id:'g2',q:'Do the people directing your AI deployments understand the commercial trade-offs — which segments to never contact, which offers carry regulatory risk, and what "good enough" personalisation looks like in your specific market?',reason:'Skills are now abundant. Context is the scarce resource. A team that can generate beautiful churn analysis without knowing which customers actually matter will optimise the wrong thing with great technical sophistication.',tips:['context','workslop','workflow redesign']},
+    {id:'g3',q:'Is there executive alignment across Marketing, Technology, Risk, and CX on the vision, investment, and accountability for AI-driven personalisation — not just in strategy, but in how work actually gets done?',reason:'McKinsey\'s research is clear: the difference between the 5% and the 95% is not algorithmic. In an agentic world, misalignment doesn\'t just slow progress — it gets automated.',tips:['agentic AI','context']},
+  ]},
+];
+const ARCH=[
+  {name:'Foundation Builder',r:[1,2.4],desc:'Your AI foundations need investment before agentic personalisation can scale safely — and you\'re not alone. 95% of organisations are here. The ones who break through fix data, alignment, and governance before adding the model. This is the right time to build correctly.'},
+  {name:'Fragmented Performer',r:[2.4,3.2],desc:'You have real capability in pockets, but the connections between signals, decisions, and execution aren\'t yet consistent. This is the iceberg stage: surface progress masks the gaps underneath. Closing them is what unlocks the compounding value the 5% describe.'},
+  {name:'Controlled Operator',r:[3.2,4.0],desc:'Your governance foundations are solid, but execution speed and learning loops are holding you back from full commercial impact. You have the guardrails to accelerate safely — the opportunity is to unlock real-time activation and workflow redesign within the structure you\'ve already built.'},
+  {name:'Agentic Ready',r:[4.0,5.1],desc:'You\'re in the 5%. Trusted data, aligned metrics, redesigned workflows, governed execution, and leadership that treats AI as a transformation. The conditions are in place to compound returns. The question now is pace and scale.'},
+];
+const PN=['Accessible Signals','Real Decision Clarity','Execution & Learning','Adoption & Governance'];
+const RECO={
+  a1:'Build a unified customer data layer — a single place where behavioural, transactional, and preference data converge. This is the iceberg fix: without it, every AI model you deploy will hit the same invisible ceiling, regardless of its sophistication.',
+  a2:'Establish a formal data quality function with clear ownership, automated monitoring, and systematic improvement. In agentic systems, data is instruction — flawed instruction executes at scale before anyone can catch it. Treat data quality as a control mechanism.',
+  a3:'Run a cross-functional semantics workshop with Marketing, CVM, Risk, and Technology to agree definitions of customer value, intent, and engagement. Misaligned definitions mean AI optimises confidently in the wrong direction — and the faster it runs, the further off course it gets.',
+  a4:'Invest in a real-time event streaming layer. Batch data means your personalisation is always responding to yesterday\'s customer. Real-time signals are what allow you to act while intent is still live.',
+  r1:'Establish a shared value metrics framework — one definition of LTV, churn probability, and revenue contribution used consistently across all functions. This is the answer to "are we building smarter systems or just faster ways to disagree?" — and it must be agreed before the models are built.',
+  r2:'Run an end-to-end workflow redesign session focused on your highest-value customer decisions. McKinsey\'s research is clear: workflow redesign has a stronger correlation with AI ROI than any model improvement. Don\'t add AI to existing processes — redesign the process around what AI makes possible.',
+  r3:'Invest in intent detection capability — models that surface customer readiness to buy, churn, or engage from behavioural signals, in real time. This is the shift from campaign calendar to customer moment: from interrupting customers to reaching them when they\'re already leaning in.',
+  e1:'Implement a full decision audit trail from day one — every AI-driven customer action should log its signal, model version, rationale, and outcome. Visibility is the minimum condition for catching capable-but-context-blind AI before it automates the wrong thing at speed.',
+  e2:'Document your suppression and override logic before you scale — which customers should never be contacted by AI, which offer types carry regulatory risk, which situations require human escalation. This is the decision authority matrix made concrete, and it\'s what makes it safe to let AI operate at speed.',
+  e3:'Build outcome feedback loops into your decisioning architecture so response rates, revenue impact, and churn changes automatically retrain models. Without this, AI performance plateaus. With it, every customer interaction makes the next decision better.',
+  g1:'Facilitate a risk appetite session with Marketing, Risk, Legal, and Technology before any agentic deployment begins. Agreeing explicit thresholds for autonomous customer decisions in advance prevents every deployment becoming a bespoke negotiation — the biggest single cause of implementation lag.',
+  g2:'Audit your team\'s organisational context — not just their technical skills. Who understands how CVM decisions are really made, which segments carry regulatory risk, what\'s been tried and failed? Investing in structured context transfer is what prevents fast, sophisticated workslop at scale.',
+  g3:'Run an executive alignment session across Marketing, Technology, Risk, and CX — not just on strategy, but on how work will actually change. McKinsey shows alignment on objectives, governance, and frontline execution is the strongest predictor of AI ROI. Misalignment gets automated.',
+};
+
+/* ══════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════ */
+const answers={};
+let userSector='';
+
+/* ══════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════ */
+function sv(a){return a==='yes'?5:a==='part'?3:1}
+function tipify(text,terms){
+  if(!terms||!terms.length)return text;
+  let out=text;
+  terms.forEach(term=>{
+    const def=GLOSS[term];if(!def)return;
+    const re=new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})(?![^<]*>)`,'i');
+    out=out.replace(re,`<span class="tip">$1<span class="tip-icon">?</span><span class="tip-box">${def}</span></span>`);
+  });
+  return out;
+}
+function scoreColor(s){return s>=4?'#52b589':s>=3?'#c08a30':'#d46e6e'}
+function scoreBg(s){return s>=4?'var(--gbg)':s>=3?'var(--ambg)':'var(--rdbg)'}
+function goTo(n){
+  ['page0','page1','page2','page3'].forEach((id,i)=>document.getElementById(id).classList.toggle('active',i===n));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function openCtx(){document.getElementById('ctxOverlay').classList.add('open');document.getElementById('ctxDrawer').classList.add('open');document.body.style.overflow='hidden'}
+function closeCtx(){document.getElementById('ctxOverlay').classList.remove('open');document.getElementById('ctxDrawer').classList.remove('open');document.body.style.overflow=''}
+function toggleReason(id){document.getElementById('qc'+id).classList.toggle('show-reason')}
+function switchTab(t){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('act',['my','bench'][i]===t));
+  document.querySelectorAll('.tab-panel').forEach((p,i)=>p.classList.toggle('act',['tab-my','tab-bench'][i]==='tab-'+t));
+  if(t==='bench')loadBenchmarks();
+}
+
+/* ══════════════════════════════════════════════
+   BUILD STATIC UI
+══════════════════════════════════════════════ */
+(function buildCtx(){
+  const ci=document.getElementById('ctxInsights');
+  INS.forEach(x=>{const el=document.createElement('div');el.className='ctx-insight';el.innerHTML=`<div class="ci-num">${x.n}</div><div class="ci-h">${x.h}</div><div class="ci-p">${x.p}</div><div class="ci-q">${x.q}</div>`;ci.appendChild(el)});
+  const ct=document.getElementById('ctxTies');
+  ATIES.forEach(x=>{const el=document.createElement('div');el.className='ctx-tie';el.innerHTML=`<div class="ct-l">${x.l}</div><div class="ct-t">${x.t}</div>`;ct.appendChild(el)});
+})();
+(function buildP0(){
+  const g=document.getElementById('insightGrid');
+  INS.forEach(x=>{const el=document.createElement('div');el.className='ic';el.innerHTML=`<div class="ic-n">${x.n}</div><div class="ic-h">${x.h}</div><div class="ic-p">${x.p}</div><div class="ic-q">${x.q}</div>`;g.appendChild(el)});
+  const at=document.getElementById('areaTies');
+  ATIES.forEach(x=>{const el=document.createElement('div');el.className='at';el.innerHTML=`<div class="at-l">${x.l}</div><div class="at-t">${x.t}</div>`;at.appendChild(el)});
+})();
+(function buildSectors(){
+  const g=document.getElementById('sectorGrid');
+  SECTORS.forEach(s=>{
+    const btn=document.createElement('button');
+    btn.className='sector-btn';
+    btn.dataset.sectorId=s.id;
+    btn.innerHTML=`<span class="sb-icon">${s.icon}</span>${s.label}`;
+    g.appendChild(btn);
+  });
+  // sector selection via delegation
+  g.addEventListener('click',function(e){
+    const btn=e.target.closest('.sector-btn');
+    if(!btn)return;
+    g.querySelectorAll('.sector-btn').forEach(b=>b.classList.remove('sel'));
+    btn.classList.add('sel');
+    userSector=btn.dataset.sectorId;
+    document.getElementById('startAssessBtn').disabled=false;
+  });
+})();
+(function buildAssessment(){
+  const c=document.getElementById('pc');
+  PILLARS.forEach((p,pi)=>{
+    const sec=document.createElement('div');sec.className=`pb p${pi}`;
+    sec.innerHTML=`<div class="ph"><div class="pbadge">${p.letter}</div><div><div class="ptitle">${p.title}</div><div class="psub">${p.sub}</div></div></div>`;
+    p.qs.forEach(q=>{
+      const card=document.createElement('div');card.className='qcard';card.id='qc'+q.id;
+      // No inline onclick — event delegation handles tg and qreason-toggle clicks
+      card.innerHTML=`
+        <div class="qcard-top">
+          <div class="qtext">
+            <div class="qt">${tipify(q.q,q.tips)}</div>
+            <div class="qreason">${q.reason}</div>
+            <button class="qreason-toggle" data-qid="${q.id}"><span class="arr">▾</span> Why this matters</button>
+          </div>
+          <div class="tgg">
+            <button class="tg" data-qid="${q.id}" data-val="no">No</button>
+            <button class="tg" data-qid="${q.id}" data-val="part">Partially</button>
+            <button class="tg" data-qid="${q.id}" data-val="yes">Yes</button>
+          </div>
+        </div>`;
+      sec.appendChild(card);
+    });
+    c.appendChild(sec);
+  });
+  // Delegate all answer-toggle and reason-toggle clicks from the container
+  c.addEventListener('click',function(e){
+    const tg=e.target.closest('.tg');
+    if(tg){pick(tg.dataset.qid, tg.dataset.val, tg);return;}
+    const rt=e.target.closest('.qreason-toggle');
+    if(rt){toggleReason(rt.dataset.qid);return;}
+  });
+})();
+
+/* ══════════════════════════════════════════════
+   REGISTRATION
+══════════════════════════════════════════════ */
+function startAssessment(){
+  const sector=SECTORS.find(s=>s.id===userSector);
+  const badge=document.getElementById('userBadge');
+  badge.innerHTML=`<div class="user-badge">${sector?sector.icon:''} <span class="ub-sector">${sector?sector.label:''}</span></div>`;
+  goTo(2);
+}
+
+/* ══════════════════════════════════════════════
+   ASSESSMENT INTERACTIONS
+══════════════════════════════════════════════ */
+function pick(id,val,btn){
+  answers[id]=val;
+  const card=document.getElementById('qc'+id);card.classList.add('answered');
+  card.querySelectorAll('.tg').forEach(b=>b.className='tg');
+  btn.className='tg '+(val==='no'?'sno':val==='part'?'spa':'sye');
+  const n=Object.keys(answers).length;
+  document.getElementById('pf').style.width=(n/12*100)+'%';
+  document.getElementById('pl').textContent=n+' / 12';
+  const rem=12-n;
+  document.getElementById('cn').textContent=rem>0?`${rem} question${rem!==1?'s':''} remaining`:'All answered — ready to view your profile';
+}
+function ps(p){const v=p.qs.map(q=>answers[q.id]?sv(answers[q.id]):3);return v.reduce((a,b)=>a+b,0)/v.length}
+
+/* ══════════════════════════════════════════════
+   RESULTS
+══════════════════════════════════════════════ */
+function showResults(){
+  const avgs=PILLARS.map(p=>ps(p));
+  const ov=+(avgs.reduce((a,b)=>a+b,0)/avgs.length).toFixed(2);
+  const arch=ARCH.find(a=>ov>=a.r[0]&&ov<a.r[1])||ARCH[3];
+  document.getElementById('an').textContent=arch.name;
+  document.getElementById('ad').textContent=arch.desc;
+  document.getElementById('os').textContent=ov.toFixed(1);
+
+  // Pillar cards
+  const g=document.getElementById('psg');g.innerHTML='';
+  PILLARS.forEach((p,i)=>{
+    const avg=avgs[i];
+    const yes=p.qs.filter(q=>answers[q.id]==='yes').length;
+    const part=p.qs.filter(q=>answers[q.id]==='part').length;
+    const no=p.qs.filter(q=>answers[q.id]==='no').length;
+    const el=document.createElement('div');el.className='psc';
+    el.innerHTML=`<div class="pscl">${p.letter}</div><div class="pscn">${PN[i]}</div><div class="pscs">${avg.toFixed(1)}</div><div class="pscd">out of 5</div><div class="pscc">${yes?`<span class="chip cy">${yes} Yes</span>`:''} ${part?`<span class="chip cp">${part} Partly</span>`:''} ${no?`<span class="chip cno">${no} No</span>`:''}</div><div class="pscbar p${i}" style="width:${(avg/5*100).toFixed(0)}%"></div>`;
+    g.appendChild(el);
+  });
+
+  // Radar
+  const ctx=document.getElementById('radarMine').getContext('2d');
+  if(window._rcMine)window._rcMine.destroy();
+  window._rcMine=new Chart(ctx,{type:'radar',data:{labels:PN,datasets:[{label:'You',data:avgs.map(v=>Math.round(v*10)/10),backgroundColor:'rgba(61,138,104,0.12)',borderColor:'#3d8a68',borderWidth:2,pointBackgroundColor:'#3d8a68',pointRadius:5}]},options:{responsive:true,maintainAspectRatio:false,scales:{r:{min:0,max:5,ticks:{stepSize:1,font:{size:11},color:'#908c83',backdropColor:'transparent'},grid:{color:'rgba(255,255,255,0.07)'},angleLines:{color:'rgba(255,255,255,0.07)'},pointLabels:{font:{size:12,family:'Lato'},color:'#c8c4bb'}}},plugins:{legend:{display:false}}}});
+
+  // Priority rows
+  const ny=[];
+  PILLARS.forEach((p,pi)=>p.qs.forEach(q=>{const a=answers[q.id]||'part';if(a!=='yes')ny.push({q:q.q,pn:PN[pi],a,s:sv(a),pi,id:q.id})}));
+  ny.sort((a,b)=>a.s-b.s);
+  const rows=document.getElementById('pr');rows.innerHTML='';
+  if(!ny.length){rows.innerHTML='<p style="color:var(--ink3);font-size:14px;padding:1rem 0">Outstanding — Yes to every question.</p>';}
+  else{ny.slice(0,6).forEach((q,i)=>{const r=document.createElement('div');r.className='ppr';const lbl=q.a==='no'?'No':'Partially';const cc=q.a==='no'?'cno':'cp';r.innerHTML=`<div class="pnum${q.a==='no'?' urg':''}">${i+1}</div><div style="flex:1"><div class="pt">${q.q}</div><div class="ptag">${q.pn}</div></div><span class="chip ${cc} ac">${lbl}</span>`;rows.appendChild(r)})}
+
+  // Recommendations
+  const rg=document.getElementById('rg');rg.innerHTML='';
+  ny.slice(0,4).forEach(q=>{const el=document.createElement('div');el.className=`rc p${q.pi}`;el.innerHTML=`<div class="rtag">${q.pn}</div><h4>${q.q.replace(/\?$/,'')}</h4><p>${RECO[q.id]}</p>`;rg.appendChild(el)});
+  if(!ny.length)rg.innerHTML='<p style="color:var(--ink3);font-size:14px">Excellent foundations across all pillars.</p>';
+
+  goTo(3);
+  saveResponse(avgs,ov);
+}
+
+/* ══════════════════════════════════════════════
+   SAVE TO GOOGLE SHEETS (via Apps Script)
+   Sheet columns: timestamp | sector | a1-a4 | r1-r3 | e1-e3 | g1-g3 | overall
+══════════════════════════════════════════════ */
+function saveResponse(avgs,overall){
+  if(!CONFIG.SCRIPT_URL||CONFIG.SCRIPT_URL==='YOUR_APPS_SCRIPT_WEB_APP_URL_HERE') return;
+  const payload={
+    sector:   userSector,
+    a1:sv(answers.a1||'part'), a2:sv(answers.a2||'part'),
+    a3:sv(answers.a3||'part'), a4:sv(answers.a4||'part'),
+    r1:sv(answers.r1||'part'), r2:sv(answers.r2||'part'), r3:sv(answers.r3||'part'),
+    e1:sv(answers.e1||'part'), e2:sv(answers.e2||'part'), e3:sv(answers.e3||'part'),
+    g1:sv(answers.g1||'part'), g2:sv(answers.g2||'part'), g3:sv(answers.g3||'part'),
+    overall: overall
+  };
+  fetch(CONFIG.SCRIPT_URL, {
+    method: 'POST',
+    mode:   'no-cors',
+    body:   JSON.stringify(payload)
+  }).catch(function(e){ console.warn('Save failed:', e); });
+}
+
+/* ══════════════════════════════════════════════
+   LOAD BENCHMARKS FROM SHEET
+══════════════════════════════════════════════ */
+let benchLoaded=false;
+async function loadBenchmarks(){
+  if(benchLoaded)return;
+  const el=document.getElementById('benchContent');
+  if(CONFIG.API_KEY==='YOUR_GOOGLE_SHEETS_API_KEY_HERE'){
+    el.innerHTML=`<div class="info-note"><strong>Benchmark data not yet configured.</strong> Once the Google Sheets API key is added to the CONFIG section and responses have been collected, this tab will show how your scores compare to others in your sector and across all participants. See the setup guide for instructions.</div>`;
+    return;
+  }
+  try{
+    const url=`https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/values/${CONFIG.SHEET_NAME}!A2:P?key=${CONFIG.API_KEY}`;
+    const resp=await fetch(url);
+    if(!resp.ok)throw new Error('Sheet fetch failed: '+resp.status);
+    const data=await resp.json();
+    const rows=(data.values||[]).map(r=>({
+      // A=timestamp, B=sector, C-F=a1-a4, G-I=r1-r3, J-L=e1-e3, M-O=g1-g3, P=overall
+      sector:r[1]||'other',
+      a1:+r[2],a2:+r[3],a3:+r[4],a4:+r[5],
+      r1:+r[6],r2:+r[7],r3:+r[8],
+      e1:+r[9],e2:+r[10],e3:+r[11],
+      g1:+r[12],g2:+r[13],g3:+r[14],
+      overall:+r[15]
+    })).filter(r=>r.overall>0);
+    if(rows.length<1){el.innerHTML='<div class="info-note">No benchmark data yet — be the first! Results will appear here as more participants complete the assessment.</div>';return;}
+    renderBenchmarks(rows,el);
+    benchLoaded=true;
+  }catch(e){
+    el.innerHTML=`<div class="error-state">Could not load benchmark data: ${e.message}<br><small>Check that the sheet is publicly viewable and the API key is correct.</small></div>`;
+  }
+}
+
+function avg(arr){return arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:0}
+function pillarAvg(rows,keys){return avg(rows.map(r=>avg(keys.map(k=>r[k]))))}
+
+function renderBenchmarks(rows,el){
+  const myAvgs=PILLARS.map(p=>ps(p));
+  const myOv=+myAvgs.reduce((a,b)=>a+b,0)/myAvgs.length;
+  const myPillarScores={a:myAvgs[0],r:myAvgs[1],e:myAvgs[2],g:myAvgs[3]};
+  const pillarKeys=[['a1','a2','a3','a4'],['r1','r2','r3'],['e1','e2','e3'],['g1','g2','g3']];
+  const mySectorId=userSector;
+  const sectorRows=rows.filter(r=>r.sector===mySectorId);
+  const allOv=avg(rows.map(r=>r.overall));
+  const sectorOv=sectorRows.length?avg(sectorRows.map(r=>r.overall)):null;
+
+  // --- SUMMARY CARDS ---
+  let html=`<span class="slbl">How you compare</span><div class="bench-grid">`;
+  const cards=[
+    {label:'Your overall score',val:myOv.toFixed(1),sub:'out of 5',delta:null},
+    {label:'All participants avg',val:allOv.toFixed(1),sub:`${rows.length} response${rows.length!==1?'s':''}`,delta:myOv-allOv},
+  ];
+  if(sectorOv!==null){
+    const sectorLabel=SECTORS.find(s=>s.id===mySectorId)?.label||mySectorId;
+    cards.push({label:`${sectorLabel} avg`,val:sectorOv.toFixed(1),sub:`${sectorRows.length} in sector`,delta:myOv-sectorOv});
+  }
+  cards.forEach(c=>{
+    const dSign=c.delta>0?'+':c.delta<0?'':' ';
+    const dClass=c.delta>0.05?'pos':c.delta<-0.05?'neg':'neu';
+    const deltaHtml=c.delta!==null?`<div class="bc-delta ${dClass}">${dSign}${c.delta.toFixed(1)} vs avg</div>`:'';
+    html+=`<div class="bench-card"><div class="bc-label">${c.label}</div><div class="bc-val">${c.val}</div><div class="bc-sub">${c.sub}</div>${deltaHtml}</div>`;
+  });
+  html+='</div>';
+
+  // --- PILLAR COMPARISON CHART ---
+  html+=`<div class="cpanel"><div class="ctitle">Pillar comparison</div><div class="csub">Your scores vs all participants${sectorOv!==null?' and your sector':''}</div><div class="rw-wide"><canvas id="benchBar"></canvas></div></div>`;
+
+  // --- RADAR OVERLAY ---
+  html+=`<div class="cpanel"><div class="ctitle">Radar overlay</div><div class="csub">Your profile vs all-participant average</div><div class="rw"><canvas id="benchRadar"></canvas></div></div>`;
+
+  // --- SECTOR TABLE ---
+  const sectorSummary={};
+  rows.forEach(r=>{
+    if(!sectorSummary[r.sector])sectorSummary[r.sector]={rows:[],name:SECTORS.find(s=>s.id===r.sector)?.label||r.sector};
+    sectorSummary[r.sector].rows.push(r);
+  });
+  html+=`<div class="cpanel"><div class="ctitle">Results by sector</div><div class="csub">Average overall score per sector</div><div style="overflow-x:auto"><table class="sector-table"><thead><tr><th>Sector</th><th>Responses</th><th>Overall</th><th>Signals</th><th>Decisions</th><th>Execution</th><th>Governance</th></tr></thead><tbody>`;
+  Object.entries(sectorSummary).sort((a,b)=>avg(b[1].rows.map(r=>r.overall))-avg(a[1].rows.map(r=>r.overall))).forEach(([sid,{rows:srows,name}])=>{
+    const isMe=sid===mySectorId;
+    const sOv=avg(srows.map(r=>r.overall));
+    const pAvgs=pillarKeys.map(keys=>pillarAvg(srows,keys));
+    const youBadge=isMe?'<span class="you-badge">You</span>':'';
+    const pill=s=>`<span class="score-pill" style="background:${scoreBg(s)};color:${scoreColor(s)}">${s.toFixed(1)}</span>`;
+    html+=`<tr class="${isMe?'mine':''}"><td>${name}${youBadge}</td><td>${srows.length}</td><td>${pill(sOv)}</td>${pAvgs.map(s=>`<td>${pill(s)}</td>`).join('')}</tr>`;
+  });
+  html+=`</tbody></table></div></div>`;
+
+  // --- INDIVIDUAL RESPONSES TABLE ---
+  const isMyRow=r=>r.sector===mySectorId;
+  html+=`<div class="cpanel"><div class="ctitle">All responses</div><div class="csub">Individual scores from all participants</div><div style="overflow-x:auto"><table class="sector-table"><thead><tr><th>Sector</th><th>Overall</th><th>Signals</th><th>Decisions</th><th>Execution</th><th>Governance</th></tr></thead><tbody>`;
+  const sortedRows=[...rows].sort((a,b)=>b.overall-a.overall);
+  sortedRows.forEach(r=>{
+    const mine=isMyRow(r);
+    const pAv=pillarKeys.map(keys=>avg(keys.map(k=>r[k])));
+    const pill=s=>`<span class="score-pill" style="background:${scoreBg(s)};color:${scoreColor(s)}">${s.toFixed(1)}</span>`;
+    const youBadge=mine?'<span class="you-badge">You</span>':'';
+    const sLabel=SECTORS.find(s=>s.id===r.sector)?.label||r.sector;
+    html+=`<tr class="${mine?'mine':''}"><td>${sLabel}${youBadge}</td><td>${pill(r.overall)}</td>${pAv.map(s=>`<td>${pill(s)}</td>`).join('')}</tr>`;
+  });
+  html+=`</tbody></table></div></div>`;
+
+  el.innerHTML=html;
+
+  // Render bar chart
+  const allPillarAvgs=pillarKeys.map(keys=>pillarAvg(rows,keys));
+  const datasets=[
+    {label:'You',data:myAvgs.map(v=>+v.toFixed(2)),backgroundColor:'rgba(61,138,104,0.7)',borderColor:'#3d8a68',borderWidth:1.5,borderRadius:4},
+    {label:'All participants',data:allPillarAvgs.map(v=>+v.toFixed(2)),backgroundColor:'rgba(255,255,255,0.1)',borderColor:'rgba(255,255,255,0.25)',borderWidth:1.5,borderRadius:4},
+  ];
+  if(sectorOv!==null){
+    datasets.push({label:SECTORS.find(s=>s.id===mySectorId)?.label||mySectorId,data:pillarKeys.map(keys=>+pillarAvg(sectorRows,keys).toFixed(2)),backgroundColor:'rgba(74,111,165,0.5)',borderColor:'#4a6fa5',borderWidth:1.5,borderRadius:4});
+  }
+  new Chart(document.getElementById('benchBar').getContext('2d'),{type:'bar',data:{labels:PN.map(n=>n.split(' ').slice(0,2).join(' ')),datasets},options:{responsive:true,maintainAspectRatio:false,scales:{y:{min:0,max:5,ticks:{stepSize:1,color:'#908c83'},grid:{color:'rgba(255,255,255,0.06)'}},x:{ticks:{color:'#c8c4bb',font:{size:11}},grid:{display:false}}},plugins:{legend:{labels:{color:'#c8c4bb',font:{size:11},boxWidth:12}}}}});
+
+  // Render radar overlay
+  const radarData={labels:PN,datasets:[
+    {label:'You',data:myAvgs.map(v=>+v.toFixed(1)),backgroundColor:'rgba(61,138,104,0.15)',borderColor:'#3d8a68',borderWidth:2,pointBackgroundColor:'#3d8a68',pointRadius:4},
+    {label:'All participants',data:allPillarAvgs.map(v=>+v.toFixed(1)),backgroundColor:'rgba(255,255,255,0.05)',borderColor:'rgba(255,255,255,0.3)',borderWidth:1.5,pointBackgroundColor:'rgba(255,255,255,0.4)',pointRadius:3},
+  ]};
+  if(sectorOv!==null){
+    radarData.datasets.push({label:SECTORS.find(s=>s.id===mySectorId)?.label||mySectorId,data:pillarKeys.map(keys=>+pillarAvg(sectorRows,keys).toFixed(1)),backgroundColor:'rgba(74,111,165,0.1)',borderColor:'#4a6fa5',borderWidth:1.5,pointBackgroundColor:'#4a6fa5',pointRadius:3});
+  }
+  new Chart(document.getElementById('benchRadar').getContext('2d'),{type:'radar',data:radarData,options:{responsive:true,maintainAspectRatio:false,scales:{r:{min:0,max:5,ticks:{stepSize:1,font:{size:10},color:'#908c83',backdropColor:'transparent'},grid:{color:'rgba(255,255,255,0.06)'},angleLines:{color:'rgba(255,255,255,0.06)'},pointLabels:{font:{size:11,family:'Lato'},color:'#c8c4bb'}}},plugins:{legend:{labels:{color:'#c8c4bb',font:{size:11},boxWidth:12}}}}});
+}
+
+/* ══════════════════════════════════════════════
+   WIRE ALL EVENTS — replaces every onclick attr
+   (required for Google Apps Script HtmlService)
+══════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', function() {
+
+  // Context drawer open/close
+  document.getElementById('ctxOverlay').addEventListener('click', closeCtx);
+  document.getElementById('ctxClose').addEventListener('click', closeCtx);
+  ['ctxBtn0','ctxBtn1','ctxBtn2','ctxBtn3'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.addEventListener('click', openCtx);
+  });
+
+  // Step navigation — all steps with data-goto
+  document.querySelectorAll('.step[data-goto]').forEach(function(el){
+    el.addEventListener('click', function(){ goTo(parseInt(el.dataset.goto)); });
+  });
+
+  // Page 0 CTA
+  document.getElementById('p0cta').addEventListener('click', function(){ goTo(1); });
+
+  // Page 1 back / start
+  document.getElementById('regBack').addEventListener('click', function(){ goTo(0); });
+  document.getElementById('startAssessBtn').addEventListener('click', startAssessment);
+
+  // Page 2 show results
+  document.getElementById('showResultsBtn').addEventListener('click', showResults);
+
+  // Page 3 tabs
+  document.querySelectorAll('.tab-btn[data-tab]').forEach(function(btn){
+    btn.addEventListener('click', function(){ switchTab(btn.dataset.tab); });
+  });
+
+  // Page 3 bottom buttons
+  document.getElementById('startOverBtn').addEventListener('click', function(){ goTo(0); });
+  document.getElementById('downloadBtn').addEventListener('click', function(){ window.print(); });
+});
+
+</script>
+</body>
+</html>
